@@ -1,5 +1,10 @@
+import 'dart:developer';
+
+import 'package:chat_app/Firebase/firebase_auth.dart';
+import 'package:chat_app/routes.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
@@ -12,6 +17,8 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   String _countryCode = '';
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController otpController = TextEditingController();
+  bool isOtpSent = false;
+  FirebaseAuthManager auth = FirebaseAuthManager();
 
   @override
   Widget build(BuildContext context) {
@@ -28,80 +35,200 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         ),
         child: Column(
           children: [
-            SizedBox(height: MediaQuery.of(context).padding.top + 10),
-            const Text(
-              'Enter your phone number',
-              style: TextStyle(
-                color: Colors.cyan,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'ChatApp will send an SMS message to verify your phone number. '
-                'Enter your country code and phone number.',
-                style: TextStyle(fontSize: 15),
+            SizedBox(height: MediaQuery.of(context).padding.top + 20),
+            if (isOtpSent)
+              const Text(
+                'Enter Otp number',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyan),
+                textAlign: TextAlign.center,
+              )
+            else
+              const Text(
+                'Enter your phone number',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyan),
                 textAlign: TextAlign.center,
               ),
-            ),
-            Row(
-              children: [
-                CountryCodePicker(
-                  onChanged: (countryCode) {
-                    setState(() {
-                      _countryCode = countryCode.dialCode!;
-                      debugPrint('country code $_countryCode');
-                    });
-                  },
-                  initialSelection: 'भारत',
-                  showCountryOnly: false,
-                  showOnlyCountryWhenClosed: false,
-                  favorite: const ['+91', 'IND'],
+            const SizedBox(height: 30),
+            if (isOtpSent)
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Otp sent to your mobile number',
+                  style: TextStyle(fontSize: 15),
+                  textAlign: TextAlign.center,
                 ),
-                const Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(hintText: 'Phone number'),
-                    keyboardType: TextInputType.number,
-                  ),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'ChatApp will send an SMS message to verify your phone number. '
+                  'Enter your country code and phone number.',
+                  style: TextStyle(fontSize: 15),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(width: 20),
-              ],
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
+              ),
+            const SizedBox(height: 20),
+            if (isOtpSent)
+              Row(
                 children: [
+                  const SizedBox(width: 90),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
+                    child: TextField(
+                      style: const TextStyle(fontSize: 30),
+                      textAlign: TextAlign.center,
+                      controller: otpController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(6),
+                        // Set max characters
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 90),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  CountryCodePicker(
+                    onInit: (countryCode) {
+                      _countryCode = '+91';
+                      log(_countryCode);
+                    },
+                    onChanged: (countryCode) {
+                      setState(() {
+                        _countryCode = countryCode.dialCode!;
+                        debugPrint('country code $_countryCode');
+                      });
+                    },
+                    initialSelection: 'भारत',
+                    showOnlyCountryWhenClosed: false,
+                    favorite: const ['+91', 'IND'],
+                  ),
+                  Expanded(
+                    child: TextField(
+                      style: const TextStyle(fontSize: 20),
+                      controller: phoneNumberController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(10),
+                        // Set max characters
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                ],
+              ),
+            const Spacer(),
+            if (isOtpSent)
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _verifyOtp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
+                        child: const Text(
+                          'Submit',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _sendOtp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        child: const Text(
+                          'Send Otp',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  void _sendOtp() async {
+    if (phoneNumberController.text.trim().length < 10) return;
+    String phoneNumber = '$_countryCode${phoneNumberController.text.trim()}';
+    await auth.verifyPhoneNumber(
+      phoneNumber,
+      (verificationId, resendToken) {
+        setState(() {
+          isOtpSent = true;
+          auth.verificationId = verificationId;
+        });
+      },
+      (verificationCompleted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Phone number verified automatically')),
+        );
+      },
+      (verificationFailed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Verification failed: ${verificationFailed.message}')),
+        );
+      },
+      (codeAutoRetrievalTimeout) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Code auto retrieval timeout')),
+        );
+      },
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('OTP sent to $phoneNumber')),
+    );
+  }
+
+  void _verifyOtp() async {
+    if (otpController.text.trim().length < 6) return;
+    String smsCode = otpController.text;
+    await auth.signInWithPhoneNumber(smsCode);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Phone number verified successfully')),
+    );
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        Routes.mainScreen, (Route<dynamic> mainScreen) => false);
   }
 }
