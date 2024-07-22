@@ -1,6 +1,5 @@
 import 'package:chat_app/Firebase/firebase_auth.dart';
 import 'package:chat_app/routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -54,10 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         destinations: const [
           NavigationDestination(icon: Icon(Icons.chat), label: 'Chats'),
-          NavigationDestination(
-              icon: Icon(Icons.history_toggle_off_outlined), label: 'Updates'),
-          NavigationDestination(
-              icon: Icon(Icons.phone_outlined), label: 'Calls'),
+          NavigationDestination(icon: Icon(Icons.history_toggle_off_outlined), label: 'Updates'),
+          NavigationDestination(icon: Icon(Icons.phone_outlined), label: 'Calls'),
         ],
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
@@ -66,16 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _popUpMenuButton() => PopupMenuButton(
-        onSelected: (String value) async {
-          if (value == 'LogOut') {
-            await FirebaseAuthManager().signOut();
-            if (mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  Routes.mainScreen, (Route<dynamic> mainScreen) => false);
-            }
-          }
-          setState(() {});
-        },
+        onSelected: _onPopSelected,
         itemBuilder: (BuildContext context) {
           return <PopupMenuEntry<String>>[
             const PopupMenuItem<String>(
@@ -95,8 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text('Starred messages'),
             ),
             const PopupMenuItem<String>(
-              value: 'Payments',
-              child: Text('Payments'),
+              value: 'Profile',
+              child: Text('Profile'),
             ),
             const PopupMenuItem<String>(
               value: 'Settings',
@@ -135,5 +123,22 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = index;
     });
     _pageController.jumpToPage(index);
+  }
+
+  _onPopSelected(String value) async {
+    switch (value) {
+      case 'LogOut':
+        await FirebaseAuthManager().signOut();
+        if (mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil(Routes.mainScreen, (Route<dynamic> mainScreen) => false);
+        }
+        break;
+
+      case 'Profile':
+        Navigator.of(context).pushNamed(Routes.profileInfoScreen);
+        break;
+    }
+
+    setState(() {});
   }
 }

@@ -1,10 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 class UserModel {
   final String userId;
   final String name;
   final String? email;
   final String phoneNumber;
   final String? profilePictureUrl;
-  final String? status;
+  final String about;
   final DateTime lastSeen;
 
   UserModel({
@@ -13,7 +15,7 @@ class UserModel {
     required this.name,
     required this.phoneNumber,
     this.profilePictureUrl,
-    this.status,
+    this.about = "Hey there!, I'm using ChatApp",
     required this.lastSeen,
   });
 
@@ -24,7 +26,7 @@ class UserModel {
         'email': email,
         'phoneNumber': phoneNumber,
         'profilePictureUrl': profilePictureUrl,
-        'status': status,
+        'status': about,
         'lastSeen': lastSeen.toIso8601String(),
       };
 
@@ -35,7 +37,7 @@ class UserModel {
         email: json['email'],
         phoneNumber: json['phoneNumber'],
         profilePictureUrl: json['profilePictureUrl'],
-        status: json['status'],
+        about: json['status'],
         lastSeen: DateTime.parse(json['lastSeen']),
       );
 
@@ -54,7 +56,7 @@ class UserModel {
         email: email ?? this.email,
         phoneNumber: phoneNumber ?? this.phoneNumber,
         profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-        status: status ?? this.status,
+        about: status ?? this.about,
         lastSeen: lastSeen ?? this.lastSeen,
       );
 }

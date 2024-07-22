@@ -23,17 +23,13 @@ class FirebaseAuthManager {
     );
   }
 
-  Future<User> signInWithPhoneNumber(String smsCode) async {
+  Future<void> signInWithPhoneNumber(String smsCode) async {
     AuthCredential credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
 
-    UserCredential userCredential =
-        await _auth.signInWithCredential(credential);
-
-    User user = userCredential.user!;
-    return user;
+    await _auth.signInWithCredential(credential);
   }
 
   Future<void> signOut() async => FirebaseAuth.instance.signOut();

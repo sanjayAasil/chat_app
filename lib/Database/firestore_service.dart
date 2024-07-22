@@ -6,7 +6,7 @@ class FirestoreService {
   //get collections of userModel
 
   final CollectionReference<Map<String, dynamic>> _userModelCollection =
-      FirebaseFirestore.instance.collection('UserModels');
+      FirebaseFirestore.instance.collection('users');
 
 //CREATE
 
