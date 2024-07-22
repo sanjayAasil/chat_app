@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class FirebaseAuthManager {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String verificationId = '';
@@ -24,12 +23,18 @@ class FirebaseAuthManager {
     );
   }
 
-  Future<void> signInWithPhoneNumber(String smsCode) async {
+  Future<User> signInWithPhoneNumber(String smsCode) async {
     AuthCredential credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
 
-    await _auth.signInWithCredential(credential);
+    UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+
+    User user = userCredential.user!;
+    return user;
   }
+
+  Future<void> signOut() async => FirebaseAuth.instance.signOut();
 }

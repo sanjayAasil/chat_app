@@ -1,3 +1,6 @@
+import 'package:chat_app/Firebase/firebase_auth.dart';
+import 'package:chat_app/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -12,13 +15,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    _pageController.jumpToPage(index);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,15 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: PageView(
         controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onPageChanged: (index) => setState(() => _selectedIndex = index),
         children: [
           ListView.builder(
             itemCount: 100,
             itemBuilder: (context, index) => ListTile(
+              onTap: () => Navigator.of(context).pushNamed(Routes.chatRoom),
               leading: const Icon(
                 CupertinoIcons.profile_circled,
                 size: 30,
@@ -73,7 +66,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _popUpMenuButton() => PopupMenuButton(
-        onSelected: (String value) {
+        onSelected: (String value) async {
+          if (value == 'LogOut') {
+            await FirebaseAuthManager().signOut();
+            if (mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  Routes.mainScreen, (Route<dynamic> mainScreen) => false);
+            }
+          }
           setState(() {});
         },
         itemBuilder: (BuildContext context) {
@@ -102,6 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
               value: 'Settings',
               child: Text('Settings'),
             ),
+            const PopupMenuItem<String>(
+              value: 'LogOut',
+              child: Text('LogOut'),
+            ),
           ];
         },
       );
@@ -125,4 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.jumpToPage(index);
+  }
 }

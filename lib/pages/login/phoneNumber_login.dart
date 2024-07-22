@@ -1,10 +1,14 @@
 import 'dart:developer';
 
 import 'package:chat_app/Firebase/firebase_auth.dart';
+import 'package:chat_app/Firestore/firestore_service.dart';
+import 'package:chat_app/Models/user_model.dart';
 import 'package:chat_app/routes.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:versatile_dialogs/loading_dialog.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
@@ -39,19 +43,13 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
             if (isOtpSent)
               const Text(
                 'Enter Otp number',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.cyan),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.cyan),
                 textAlign: TextAlign.center,
               )
             else
               const Text(
                 'Enter your phone number',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.cyan),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.cyan),
                 textAlign: TextAlign.center,
               ),
             const SizedBox(height: 30),
@@ -187,48 +185,56 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     );
   }
 
-  void _sendOtp() async {
+  void _sendOtp() {
     if (phoneNumberController.text.trim().length < 10) return;
+    LoadingDialog loadingDialog = LoadingDialog()..show(context);
     String phoneNumber = '$_countryCode${phoneNumberController.text.trim()}';
-    await auth.verifyPhoneNumber(
+    auth.verifyPhoneNumber(
       phoneNumber,
       (verificationId, resendToken) {
+        if (mounted) {
+          loadingDialog.dismiss(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('OTP sent to $phoneNumber')),
+          );
+        }
         setState(() {
           isOtpSent = true;
           auth.verificationId = verificationId;
         });
       },
-      (verificationCompleted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Phone number verified automatically')),
-        );
-      },
+      (verificationCompleted) {},
       (verificationFailed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Verification failed: ${verificationFailed.message}')),
-        );
+        if (mounted) {
+          loadingDialog.dismiss(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Verification failed: ${verificationFailed.message}')),
+          );
+        }
       },
-      (codeAutoRetrievalTimeout) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Code auto retrieval timeout')),
-        );
-      },
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('OTP sent to $phoneNumber')),
+      (codeAutoRetrievalTimeout) {},
     );
   }
 
   void _verifyOtp() async {
     if (otpController.text.trim().length < 6) return;
+    LoadingDialog loadingDialog = LoadingDialog()..show(context);
     String smsCode = otpController.text;
-    await auth.signInWithPhoneNumber(smsCode);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Phone number verified successfully')),
+    User user = await auth.signInWithPhoneNumber(smsCode);
+    UserModel userModel = UserModel(
+      userId: user.uid,
+      name: '',
+      phoneNumber: user.phoneNumber!,
+      lastSeen: DateTime.now(),
     );
-    Navigator.of(context).pushNamedAndRemoveUntil(
-        Routes.mainScreen, (Route<dynamic> mainScreen) => false);
+    await FirestoreService().addUser(userModel);
+
+    if (mounted) {
+      loadingDialog.dismiss(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number verified successfully')),
+      );
+      Navigator.of(context).pushNamedAndRemoveUntil(Routes.mainScreen, (Route<dynamic> mainScreen) => false);
+    }
   }
 }
