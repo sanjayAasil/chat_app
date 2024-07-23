@@ -163,5 +163,7 @@ class _ChatRoomState extends State<ChatRoom> {
         ],
       );
 
-  _sendMessage() {}
+  _sendMessage() {
+
+  }
 }

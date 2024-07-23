@@ -26,7 +26,7 @@ class UserModel {
         'email': email,
         'phoneNumber': phoneNumber,
         'profilePictureUrl': profilePictureUrl,
-        'status': about,
+        'about': about,
         'lastSeen': lastSeen.toIso8601String(),
       };
 
@@ -37,7 +37,7 @@ class UserModel {
         email: json['email'] ?? 'email',
         phoneNumber: json['phoneNumber'],
         profilePictureUrl: json['profilePictureUrl'] ?? 'profilePictureUrl',
-        about: json['status'],
+        about: json['about'],
         lastSeen: DateTime.parse(json['lastSeen']),
       );
 
@@ -47,7 +47,7 @@ class UserModel {
     String? email,
     String? phoneNumber,
     String? profilePictureUrl,
-    String? status,
+    String? about,
     DateTime? lastSeen,
   }) =>
       UserModel(
@@ -56,7 +56,7 @@ class UserModel {
         email: email ?? this.email,
         phoneNumber: phoneNumber ?? this.phoneNumber,
         profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-        about: status ?? this.about,
+        about: about ?? this.about,
         lastSeen: lastSeen ?? this.lastSeen,
       );
 }

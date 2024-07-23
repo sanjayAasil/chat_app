@@ -1,9 +1,9 @@
+import 'package:chat_app/Database/DataManager.dart';
 import 'package:chat_app/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:versatile_dialogs/loading_dialog.dart';
-
 import '../../Database/firestore_service.dart';
 import '../../Models/user_model.dart';
 
@@ -121,6 +121,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       email: emailController.text.trim(),
     );
     await FirestoreService().addUser(userModel);
+    DataManager().user = userModel;
 
     if (mounted) {
       loadingDialog.dismiss(context);

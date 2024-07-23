@@ -12,6 +12,7 @@ class FirestoreService {
   Future<void> addUser(UserModel user) async {
     try {
       await _userModelCollection.doc(user.userId).set(user.toJson());
+
       print('User added successfully');
     } catch (e) {
       print('Failed to add user: $e');
@@ -22,7 +23,6 @@ class FirestoreService {
 
   Future<UserModel> getUser(String userId) async {
     DocumentSnapshot doc = await _userModelCollection.doc(userId).get();
-    print('json fevjejvjev ${doc.data()}');
     return UserModel.fromJson(doc.data() as Map<String, dynamic>);
   }
 
