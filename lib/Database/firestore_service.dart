@@ -5,8 +5,7 @@ import '../Models/user_model.dart';
 class FirestoreService {
   //get collections of userModel
 
-  final CollectionReference<Map<String, dynamic>> _userModelCollection =
-      FirebaseFirestore.instance.collection('users');
+  final CollectionReference<Map<String, dynamic>> _userModelCollection = FirebaseFirestore.instance.collection('users');
 
 //CREATE
 
@@ -18,7 +17,14 @@ class FirestoreService {
       print('Failed to add user: $e');
     }
   }
+
 //READ
+
+  Future<UserModel> getUser(String userId) async {
+    DocumentSnapshot doc = await _userModelCollection.doc(userId).get();
+    print('json fevjejvjev ${doc.data()}');
+    return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+  }
 
 //UPDATE
 

@@ -34,9 +34,9 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
         userId: json['userId'],
         name: json['name'],
-        email: json['email'],
+        email: json['email'] ?? 'email',
         phoneNumber: json['phoneNumber'],
-        profilePictureUrl: json['profilePictureUrl'],
+        profilePictureUrl: json['profilePictureUrl'] ?? 'profilePictureUrl',
         about: json['status'],
         lastSeen: DateTime.parse(json['lastSeen']),
       );

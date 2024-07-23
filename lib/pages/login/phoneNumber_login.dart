@@ -229,7 +229,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Phone number verified successfully')),
       );
-      Navigator.of(context).pushNamed(Routes.profileInfoScreen);
+      Navigator.of(context).pushNamed(Routes.createProfile);
     }
   }
 }
