@@ -1,4 +1,5 @@
 import 'package:chat_app/Database/DataManager.dart';
+import 'package:chat_app/Firebase/firebase_auth.dart';
 import 'package:chat_app/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,8 +19,24 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
+  late UserModel? user;
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      user = await FirestoreService().getUser(FirebaseAuth.instance.currentUser!.uid);
+      nameController.text = user?.name ?? '';
+      emailController.text = user?.email ?? '';
+      setState(() {});
+    });
+
     return Scaffold(
       body: Container(
         height: double.infinity,

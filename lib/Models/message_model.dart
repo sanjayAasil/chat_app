@@ -1,15 +1,15 @@
+
 class MessageModel {
   final String message;
   final String senderId;
   final String receiverId;
-  final DateTime timeStamp;
+  final DateTime timeStamp = DateTime.now();
   final bool isRead;
 
   MessageModel({
     required this.message,
     required this.senderId,
     required this.receiverId,
-    required this.timeStamp,
     this.isRead = false,
   });
 
@@ -22,9 +22,9 @@ class MessageModel {
       };
 
   factory MessageModel.fromJson(Map<String, dynamic> json) => MessageModel(
-      message: json['message'],
-      senderId: json['senderId'],
-      receiverId: json['receiverId'],
-      timeStamp: DateTime.parse(json['timeStamp']),
-      isRead: json['isRead']);
+        message: json['message'],
+        senderId: json['senderId'],
+        receiverId: json['receiverId'],
+        isRead: json['isRead'],
+      );
 }

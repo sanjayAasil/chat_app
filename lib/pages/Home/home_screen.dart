@@ -1,7 +1,12 @@
+import 'package:chat_app/Database/DataManager.dart';
+import 'package:chat_app/Database/firestore_service.dart';
 import 'package:chat_app/Firebase/firebase_auth.dart';
 import 'package:chat_app/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../../Models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,11 +16,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<UserModel>? users;
+
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
   @override
+  void initState() {
+    _fetchUsers();
+    super.initState();
+  }
+
+  _fetchUsers() async {
+    users = await FirestoreService().getAllUsers();
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('Checkkkk build: HomeScreen');
+    WidgetsBinding.instance.addPostFrameCallback((_) async {});
     return Scaffold(
       appBar: AppBar(
         title: _appBarTitle(),
@@ -30,24 +50,26 @@ class _HomeScreenState extends State<HomeScreen> {
         onPageChanged: (index) => setState(() => _selectedIndex = index),
         children: [
           ListView.builder(
-            itemCount: 100,
-            itemBuilder: (context, index) => ListTile(
-              onTap: () => Navigator.of(context).pushNamed(Routes.chatRoom),
-              leading: const Icon(
-                CupertinoIcons.profile_circled,
-                size: 30,
-              ),
-              title: Text('Name $index'),
-              subtitle: Text('SubTitle $index'),
-              trailing: Text('10:$index'),
-            ),
+            itemCount: users?.length ?? 0,
+            itemBuilder: (context, index) {
+              if (users?[index].userId != FirebaseAuth.instance.currentUser!.uid) {
+                return ListTile(
+                  onTap: () => Navigator.of(context).pushNamed(Routes.chatRoom, arguments: users?[index].userId),
+                  leading: const Icon(
+                    CupertinoIcons.profile_circled,
+                    size: 30,
+                  ),
+                  title: Text(users?[index].name ?? ''),
+                  subtitle: Text('SubTitle $index'),
+                  trailing: Text('10:$index'),
+                );
+              } else {
+                return const SizedBox();
+              }
+            },
           ),
-          Container(
-            color: Colors.grey,
-          ),
-          Container(
-            color: Colors.black12,
-          ),
+          Container(color: Colors.grey),
+          Container(color: Colors.black12),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -129,6 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (value) {
       case 'LogOut':
         await FirebaseAuthManager().signOut();
+        DataManager().user = null;
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(Routes.mainScreen, (Route<dynamic> mainScreen) => false);
         }

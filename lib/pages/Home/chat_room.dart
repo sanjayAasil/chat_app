@@ -1,29 +1,56 @@
+import 'package:chat_app/Database/firestore_service.dart';
+import 'package:chat_app/Models/message_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../Models/user_model.dart';
+
 class ChatRoom extends StatefulWidget {
-  const ChatRoom({super.key});
+  final String userId;
+
+  const ChatRoom({super.key, required this.userId});
 
   @override
   State<ChatRoom> createState() => _ChatRoomState();
 }
 
 class _ChatRoomState extends State<ChatRoom> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    print('erfvegf ybhebrfb ie f sender ${FirebaseAuth.instance.currentUser!.uid} ans receiver ${widget.userId}');
+    super.initState();
+    firestoreService.getMessages(
+      currentUserId: FirebaseAuth.instance.currentUser!.uid,
+      receiverUserId: widget.userId,
+    );
+    _fetchUser();
+  }
+
+  _fetchUser() async {
+    user = await FirestoreService().getUser(widget.userId);
+    setState(() {});
+  }
+
   final TextEditingController _messageController = TextEditingController();
+  FirestoreService firestoreService = FirestoreService();
+    UserModel? user;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Profile name',
+              user?.name ?? '',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
+            const Text(
               'last seen at 10:23 pm',
               style: TextStyle(
                 fontSize: 15,
@@ -54,15 +81,44 @@ class _ChatRoomState extends State<ChatRoom> {
           children: [
             Expanded(
               child: StreamBuilder(
-                stream: null,
-                builder:
-                    (BuildContext context, AsyncSnapshot<dynamic> snapshot) =>
-                        const ListTile(
-                  title: Text('check'),
-                ),
+                stream: firestoreService.messageStreamController.stream,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No messages yet.'));
+                  } else {
+                    List<MessageModel> messages = snapshot.data!;
+                    WidgetsBinding.instance.addPostFrameCallback((callback) {
+                      print('hevuw vh vh ehrv ev ${messages.length}');
+                      _scrollToBottom();
+                    });
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        return Align(
+                          alignment: widget.userId == message.senderId ? Alignment.centerLeft : Alignment.centerRight,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: message.senderId == FirebaseAuth.instance.currentUser!.uid
+                                  ? Colors.cyan
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              message.message,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
               ),
             ),
-            const Spacer(),
             _bottomWidget(),
           ],
         ),
@@ -164,6 +220,22 @@ class _ChatRoomState extends State<ChatRoom> {
       );
 
   _sendMessage() {
+    if (_messageController.text.trim().isEmpty) return;
+    firestoreService.createMessage(
+      message: _messageController.text.trim(),
+      senderId: FirebaseAuth.instance.currentUser!.uid,
+      receiverId: widget.userId,
+    );
+    _messageController.clear();
+  }
 
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    }
   }
 }

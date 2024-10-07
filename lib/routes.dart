@@ -23,7 +23,8 @@ class Routes {
       case phoneAuthScreen:
         return MaterialPageRoute(builder: (context) => const PhoneAuthScreen());
       case chatRoom:
-        return MaterialPageRoute(builder: (context) => const ChatRoom());
+        String userId = settings.arguments as String;
+        return MaterialPageRoute(builder: (context) => ChatRoom(userId: userId));
       case createProfile:
         return MaterialPageRoute(builder: (context) => const CreateProfileScreen());
       case profileInfoScreen:

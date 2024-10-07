@@ -197,7 +197,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         if (mounted) {
           loadingDialog.dismiss(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('OTP sent to $phoneNumber')),
+            SnackBar(content: Text('OTP sent to $phoneNumber'), behavior: SnackBarBehavior.floating),
           );
         }
         setState(() {
@@ -210,7 +210,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         if (mounted) {
           loadingDialog.dismiss(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Verification failed: ${verificationFailed.message}')),
+            SnackBar(
+                content: Text('Verification failed: ${verificationFailed.message}'),
+                behavior: SnackBarBehavior.floating),
           );
         }
       },
@@ -222,12 +224,12 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     if (otpController.text.trim().length < 6) return;
     LoadingDialog loadingDialog = LoadingDialog()..show(context);
     String smsCode = otpController.text;
-     await auth.signInWithPhoneNumber(smsCode);
+    await auth.signInWithPhoneNumber(smsCode);
 
     if (mounted) {
       loadingDialog.dismiss(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone number verified successfully')),
+        const SnackBar(content: Text('Phone number verified successfully'), behavior: SnackBarBehavior.floating),
       );
       Navigator.of(context).pushNamed(Routes.createProfile);
     }

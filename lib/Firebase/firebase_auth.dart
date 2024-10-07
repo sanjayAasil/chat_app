@@ -32,5 +32,11 @@ class FirebaseAuthManager {
     await _auth.signInWithCredential(credential);
   }
 
-  Future<void> signOut() async => FirebaseAuth.instance.signOut();
+  Future<void> signOut() async {
+    try {
+      return FirebaseAuth.instance.signOut();
+    } catch (e) {
+      print('eriubjrberbvj ev evj erv');
+    }
+  }
 }
