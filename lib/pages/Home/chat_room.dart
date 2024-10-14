@@ -1,8 +1,8 @@
 import 'package:chat_app/Database/firestore_service.dart';
 import 'package:chat_app/Models/message_model.dart';
+import 'package:chat_app/pages/Common/message_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../Models/user_model.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -19,7 +19,6 @@ class _ChatRoomState extends State<ChatRoom> {
 
   @override
   void initState() {
-    print('erfvegf ybhebrfb ie f sender ${FirebaseAuth.instance.currentUser!.uid} ans receiver ${widget.userId}');
     super.initState();
     firestoreService.getMessages(
       currentUserId: FirebaseAuth.instance.currentUser!.uid,
@@ -35,7 +34,7 @@ class _ChatRoomState extends State<ChatRoom> {
 
   final TextEditingController _messageController = TextEditingController();
   FirestoreService firestoreService = FirestoreService();
-    UserModel? user;
+  UserModel? user;
 
   @override
   Widget build(BuildContext context) {
@@ -97,22 +96,8 @@ class _ChatRoomState extends State<ChatRoom> {
                       itemBuilder: (context, index) {
                         final message = messages[index];
                         return Align(
-                          alignment: widget.userId == message.senderId ? Alignment.centerLeft : Alignment.centerRight,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: message.senderId == FirebaseAuth.instance.currentUser!.uid
-                                  ? Colors.cyan
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              message.message,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        );
+                            alignment: message.senderId == widget.userId ? Alignment.centerLeft : Alignment.centerRight,
+                            child: MessageTile(message: message));
                       },
                     );
                   }

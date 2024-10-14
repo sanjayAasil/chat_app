@@ -56,12 +56,12 @@ class FirestoreService {
 
   void getMessages({required String currentUserId, required String receiverUserId}) {
     _messageCollection.orderBy('timeStamp', descending: false).snapshots().listen((snapshot) {
-      List<MessageModel> allMessages = snapshot.docs
-          .map((doc) => MessageModel.fromJson(doc.data()))
-          .where((message) =>
-              (message.senderId == currentUserId && message.receiverId == receiverUserId) ||
-              (message.senderId == receiverUserId && message.receiverId == currentUserId))
-          .toList();
+      List<MessageModel> allMessages = snapshot.docs.map((doc) {
+        return MessageModel.fromJson(doc.data());
+      }).where((message) {
+        return (message.senderId == currentUserId && message.receiverId == receiverUserId) ||
+            (message.senderId == receiverUserId && message.receiverId == currentUserId);
+      }).toList();
 
       // Sort messages by timestamp in ascending order (oldest to newest)
       allMessages.sort((a, b) => a.timeStamp.compareTo(b.timeStamp));

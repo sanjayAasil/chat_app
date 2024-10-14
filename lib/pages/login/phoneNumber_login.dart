@@ -1,16 +1,10 @@
 import 'dart:developer';
-
-import 'package:chat_app/Database/DataManager.dart';
 import 'package:chat_app/Firebase/firebase_auth.dart';
-import 'package:chat_app/Models/user_model.dart';
 import 'package:chat_app/routes.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:versatile_dialogs/loading_dialog.dart';
-
-import '../../Database/firestore_service.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
